@@ -1,0 +1,28 @@
+# Environnements Python (ne jamais versionner — surtout pas dans OneDrive)
+.venv/
+.venv-*/
+venv/
+env/
+__pycache__/
+*.pyc
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Sorties générées (reproductibles via les notebooks)
+figures/
+
+# OS / éditeurs / outils
+.DS_Store
+Thumbs.db
+.vscode/
+desktop.ini
+.claude/
+
+# Secrets / config locale
+.env
+*.env.local
+
+# Données volumineuses : on garde le CSV de travail mais pas les dumps bruts
+db/*.sql
+*.dump

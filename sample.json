@@ -1,0 +1,18 @@
+[
+  {
+    "duree_minutes": 120.0,
+    "heure_decimale": 8.5,
+    "is_nuit": 0,
+    "is_transfrontalier": 0,
+    "code_pays_dep": "FR",
+    "code_pays_arr": "FR"
+  },
+  {
+    "duree_minutes": 400.0,
+    "heure_decimale": 22.0,
+    "is_nuit": 1,
+    "is_transfrontalier": 1,
+    "code_pays_dep": "FR",
+    "code_pays_arr": "DE"
+  }
+]

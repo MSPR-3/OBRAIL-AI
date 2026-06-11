@@ -1,4 +1,4 @@
-# MSPR ObRail IA — environnement figé (reproductibilité)
+﻿# MSPR ObRail IA â€” environnement figÃ© (reproductibilitÃ©)
 # Installer dans un venv HORS OneDrive :
 #   python -m venv C:\Users\<user>\.venvs\mspr-obrail
 #   C:\Users\<user>\.venvs\mspr-obrail\Scripts\Activate.ps1
@@ -11,3 +11,7 @@ scikit-learn==1.9.0
 jupyter==1.1.1
 nbconvert==7.17.1
 ipykernel==7.3.0
+
+joblib==1.5.3
+xgboost==3.0.0
+lightgbm==4.6.0

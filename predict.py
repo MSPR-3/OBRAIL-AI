@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+﻿﻿from __future__ import annotations
 
 import argparse
 import json
@@ -9,15 +9,7 @@ import joblib
 import numpy as np
 import pandas as pd
 
-FEATURE_COLUMNS = [
-    'duree_minutes',
-    'heure_decimale',
-    'is_nuit',
-    'is_transfrontalier',
-    'code_pays_dep',
-    'code_pays_arr',
-]
-
+from src.config import FEATURE_COLUMNS
 
 def load_artifact(model_path: str | Path) -> dict[str, Any]:
     artifact = joblib.load(model_path)
@@ -28,7 +20,6 @@ def load_artifact(model_path: str | Path) -> dict[str, Any]:
     if missing:
         raise ValueError(f'Artefact incomplet: {sorted(missing)}')
     return artifact
-
 
 def read_payload(payload_path: str | Path) -> pd.DataFrame:
     path = Path(payload_path)
@@ -49,7 +40,6 @@ def read_payload(payload_path: str | Path) -> pd.DataFrame:
         raise ValueError(f'Colonnes manquantes pour la prédiction: {missing}')
     return frame[FEATURE_COLUMNS].copy()
 
-
 def predict_dataframe(model_path: str | Path, frame: pd.DataFrame) -> pd.DataFrame:
     artifact = load_artifact(model_path)
     pipeline = artifact['pipeline']
@@ -64,7 +54,6 @@ def predict_dataframe(model_path: str | Path, frame: pd.DataFrame) -> pd.DataFra
     for index, class_name in enumerate(class_names):
         result[f'proba_{class_name}'] = proba[:, index]
     return result
-
 
 def cli() -> None:
     parser = argparse.ArgumentParser(description='Prédiction ObRail M2')
@@ -82,7 +71,6 @@ def cli() -> None:
         result.to_csv(output_path, index=False, encoding='utf-8')
     else:
         print(result.to_string(index=False))
-
 
 if __name__ == '__main__':
     cli()

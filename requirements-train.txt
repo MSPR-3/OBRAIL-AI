@@ -1,0 +1,12 @@
+# Dépendances minimales du service "trainer" (Railway cron) — sans Jupyter.
+# Versions alignées sur requirements.txt pour garantir la compatibilité de
+# désérialisation joblib côté OBRAIL-API.
+pandas==3.0.3
+numpy==2.4.6
+scikit-learn==1.9.0
+joblib==1.5.3
+matplotlib==3.10.9
+xgboost==3.0.0
+lightgbm==4.6.0
+sqlalchemy==2.0.43
+psycopg2-binary==2.9.10

@@ -61,7 +61,7 @@ def build_model_specs(n_classes: int) -> list[ModelSpec]:
     if lgb is not None:
         specs.append(ModelSpec(
             name='lightgbm',
-            estimator=Pipeline([('preprocessor', preprocessor), ('model', lgb.LGBMClassifier(objective='multiclass', num_class=n_classes, random_state=RANDOM_STATE, n_jobs=-1, verbose=-1))]),
+            estimator=Pipeline([('preprocessor', preprocessor), ('model', lgb.LGBMClassifier(objective='multiclass', num_class=n_classes, random_state=RANDOM_STATE, n_jobs=1, verbose=-1))]),
             param_space={'model__n_estimators': [200, 400, 600], 'model__num_leaves': [15, 31, 63], 'model__learning_rate': [0.01, 0.05, 0.1]},
             search_kind='random',
             n_iter=20,

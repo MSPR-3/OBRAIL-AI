@@ -1,3 +1,4 @@
+import io
 import json
 import logging
 from dataclasses import dataclass
@@ -48,6 +49,9 @@ class TrainingArtifacts:
     candidates_path: Path
     confusion_matrix_path: Path
     feature_importance_path: Path
+    model_bytes: bytes = b''
+    test_metrics: dict[str, Any] | None = None
+    n_rows_train: int = 0
 
 def fit_search(spec: ModelSpec, X_train: pd.DataFrame, y_train: np.ndarray, sample_weight: np.ndarray, cv_splits: int = 5, random_state: int = RANDOM_STATE) -> Any:
     cv = StratifiedKFold(n_splits=cv_splits, shuffle=True, random_state=random_state)
@@ -70,8 +74,9 @@ def retrain_final_model(best_result: CandidateResult, X_trainval: pd.DataFrame, 
     final_estimator.fit(X_trainval, y_trainval, model__sample_weight=compute_sample_weight('balanced', y_trainval))
     return final_estimator
 
-def run_training_pipeline(data_path: str | Path = 'data/obrail_features.csv', artifact_dir: str | Path = 'artifacts/member2', cv_splits: int = 5) -> TrainingArtifacts:
-    df = load_dataset(data_path)
+def run_training_pipeline(data_path: str | Path = 'data/obrail_features.csv', artifact_dir: str | Path = 'artifacts/member2', cv_splits: int = 5, df: pd.DataFrame | None = None) -> TrainingArtifacts:
+    if df is None:
+        df = load_dataset(data_path)
     validate_dataset(df)
     train_df, val_df, test_df = split_labelled_frame(df)
 
@@ -107,10 +112,24 @@ def run_training_pipeline(data_path: str | Path = 'data/obrail_features.csv', ar
     
     summary_payload = {'model_name': selected.name, 'feature_columns': FEATURE_COLUMNS, 'test_metrics': test_metrics}
     (artifact_dir / 'training_summary.json').write_text(json.dumps(summary_payload, indent=2, ensure_ascii=False), encoding='utf-8')
-    
-    joblib.dump({'model_name': selected.name, 'pipeline': final_model, 'label_encoder': label_encoder, 'class_names': class_names}, artifact_dir / 'best_model.joblib')
+
+    artifact_obj = {'model_name': selected.name, 'pipeline': final_model, 'label_encoder': label_encoder, 'class_names': class_names}
+    buffer = io.BytesIO()
+    joblib.dump(artifact_obj, buffer)
+    model_bytes = buffer.getvalue()
+    (artifact_dir / 'best_model.joblib').write_bytes(model_bytes)
 
     plot_confusion_matrix(test_metrics['confusion_matrix'], class_names, artifact_dir / 'confusion_matrix_test.png', 'Matrice de confusion')
     plot_feature_importance(final_model, artifact_dir / 'feature_importance.png')
 
-    return TrainingArtifacts(selected.name, artifact_dir / 'best_model.joblib', artifact_dir / 'training_summary.json', artifact_dir / 'candidate_results.csv', artifact_dir / 'confusion_matrix_test.png', artifact_dir / 'feature_importance.png')
+    return TrainingArtifacts(
+        selected.name,
+        artifact_dir / 'best_model.joblib',
+        artifact_dir / 'training_summary.json',
+        artifact_dir / 'candidate_results.csv',
+        artifact_dir / 'confusion_matrix_test.png',
+        artifact_dir / 'feature_importance.png',
+        model_bytes=model_bytes,
+        test_metrics=test_metrics,
+        n_rows_train=int(len(X_train) + len(X_val)),
+    )

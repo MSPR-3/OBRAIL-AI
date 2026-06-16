@@ -25,7 +25,7 @@ import sklearn
 from sqlalchemy import create_engine
 
 from src.db_extract import extract_features_from_db
-from src.model_store import has_new_data, save_model
+from src.model_store import ensure_schema, has_new_data, save_model
 from src.train import run_training_pipeline
 
 LOGGER = logging.getLogger("train_from_db")
@@ -58,6 +58,9 @@ def main() -> int:
         LOGGER.error("DATABASE_URL non défini.")
         return 2
     engine = create_engine(normalize_db_url(raw_url), pool_pre_ping=True)
+
+    # 0. garantit la table model_artifact (bases antérieures à cet ajout)
+    ensure_schema(engine)
 
     # 1. change-check
     retrain, watermark, last_trained = has_new_data(engine)

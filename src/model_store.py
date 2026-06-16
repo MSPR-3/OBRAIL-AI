@@ -19,6 +19,35 @@ LOGGER = logging.getLogger(__name__)
 # Statuts d'import considérés comme "données disponibles" pour le change-check.
 IMPORT_OK_STATUTS = ("succès", "succes", "partiel")
 
+# DDL idempotent : garantit la table même sur une base créée avant cet ajout
+# (l'obrail-test a été initialisé depuis un dump antérieur). Évite tout accès
+# manuel à la console SQL.
+_DDL_TABLE = """
+CREATE TABLE IF NOT EXISTS public.model_artifact (
+    id_model               serial PRIMARY KEY,
+    created_at             timestamptz NOT NULL DEFAULT now(),
+    model_name             varchar(50) NOT NULL,
+    sklearn_version        varchar(20),
+    trained_on_import_date timestamp without time zone,
+    n_rows_train           integer,
+    metrics                jsonb,
+    artifact               bytea NOT NULL,
+    is_active              boolean NOT NULL DEFAULT true
+)
+"""
+_DDL_INDEX = (
+    "CREATE INDEX IF NOT EXISTS idx_model_artifact_active "
+    "ON public.model_artifact (is_active, id_model DESC)"
+)
+
+
+def ensure_schema(engine: Any) -> None:
+    """Crée la table model_artifact + index si absents (idempotent)."""
+    with engine.begin() as conn:
+        conn.execute(text(_DDL_TABLE))
+        conn.execute(text(_DDL_INDEX))
+    LOGGER.info("Schéma model_artifact vérifié/créé.")
+
 
 def read_db_import_high_watermark(engine: Any) -> Optional[datetime]:
     """Date du dernier import réussi/partiel (signal "nouvelles données")."""
